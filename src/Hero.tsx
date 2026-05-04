@@ -108,7 +108,7 @@ const HoldingSection = () => {
             className="flex items-center"
           >
             <span className="font-sans font-bold text-2xl tracking-tighter text-neutral-900 lowercase">
-              falcon.designs
+              Falcon.Design
             </span>
           </motion.div>
 
@@ -222,7 +222,6 @@ const HoldingSection = () => {
               scale: videoScale,
               x: videoX,
               y: videoY,
-              borderRadius: videoBorderRadius,
             }}
             className="relative overflow-hidden shadow-2xl pointer-events-auto origin-bottom-right m-0"
           >

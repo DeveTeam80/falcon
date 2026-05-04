@@ -1,30 +1,31 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import RevealingHeading from "./RevealingHeader";
 
 const PROJECTS = [
   {
     id: "architecture",
     category: "architecture",
     name: "ARCHITECTURAL DESIGN",
-    image: "/assets/images/proj1.webp", 
-    furnitureImage: "/assets/images/proj1-pop.webp", 
+    image: "/assets/images/proj1.webp",
+    furnitureImage: "/assets/images/proj1-pop.webp",
     link: "",
   },
   {
     id: "interiors",
     category: "interiors",
     name: "LUXURY INTERIOR DESIGN",
-    image: "/assets/images/proj2.webp", 
-    furnitureImage: "/assets/images/proj2-pop.webp", 
+    image: "/assets/images/proj2.webp",
+    furnitureImage: "/assets/images/proj2-pop.webp",
     link: "",
   },
   {
     id: "visualization",
     category: "visualization",
     name: "3D VISUALIZATION & VR",
-    image: "/assets/images/proj3.webp", 
-    furnitureImage: "/assets/images/proj3-pop.webp", 
+    image: "/assets/images/proj3.webp",
+    furnitureImage: "/assets/images/proj3-pop.webp",
     link: "",
   },
 ];
@@ -115,7 +116,10 @@ const ProjectSlide = ({ project, index, total, scrollYProgress }) => {
 
       {/* LAYER 2: Text (The only thing moving with scroll) */}
       <div className="absolute inset-0 z-[2] flex items-start justify-start">
-        <AnimatedLetters text={project.category.toUpperCase()} progress={localSmooth} />
+        <AnimatedLetters
+          text={project.category.toUpperCase()}
+          progress={localSmooth}
+        />
       </div>
 
       {/* LAYER 3: Foreground Furniture PNG (Static & Superimposed) */}
@@ -182,21 +186,7 @@ export default function ProjectsSlider() {
 
   return (
     <div ref={containerRef} style={{ height: `${total * 200}vh` }}>
-      <div className="mb-24 text-center">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex flex-col items-center"
-        >
-          <span className="font-serif italic text-6xl md:text-8xl text-neutral-800 leading-tight">
-            Our
-          </span>
-          <span className="font-sans font-bold text-6xl md:text-8xl text-neutral-900 uppercase tracking-tighter -mt-2">
-            Services
-          </span>
-        </motion.h2>
-      </div>
+      <RevealingHeading topText="Discover" bottomText="Our Services" />
 
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-black">
         {PROJECTS.map((project, i) => (

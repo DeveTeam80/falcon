@@ -53,9 +53,9 @@ const PROJECT_IMAGES = [
     title: "Project R3",
     category: "Hospitality",
   },
-    {
+  {
     src: "https://cdn.prod.website-files.com/697096b6dde8a7564252bfdd/69a858a21313048249c36dc2_MERSI%20x%20AURE%CC%81LIEN%20COHEN-4%20(1).webp",
-    title: "Aurelien Cohen",
+    title: "Aurelien Cohen 2",
     category: "Résidentiel",
   },
 ];
@@ -78,7 +78,7 @@ const TitleWord = ({
   const opacity = useTransform(
     smoothProgress,
     [0, start, end, 1],
-    [0, 0, 1, 1],
+    [0, 0, 1, 1]
   );
 
   return (
@@ -106,19 +106,17 @@ const ImageCard = ({ project, i, smoothProgress }: ImageCardProps) => {
   const col = i % 3;
   const row = Math.floor(i / 3);
 
-  // Initial State (The horizontal strip)
-  const fWidth = 8; // Slightly narrower to fit 10 better
+  const fWidth = 8;
   const fHeight = 30;
   const fLeft = i * 10;
   const fTop = 60;
 
-  // Grid State (The 3-column layout)
   const gMargin = 5;
   const gGap = 2;
   const gWidth = (100 - gMargin * 2 - gGap * 2) / 3;
-  const gHeight = 50; // Increased height
+  const gHeight = 50;
   const gLeft = gMargin + col * (gWidth + gGap);
-  const gTop = 10 + row * (gHeight + gGap); // Initial top positions
+  const gTop = 10 + row * (gHeight + gGap);
 
   const range = [0.1, 0.6];
 
@@ -170,7 +168,6 @@ const ImageCard = ({ project, i, smoothProgress }: ImageCardProps) => {
   );
 };
 
-
 const ProjectsGridSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState("All");
@@ -186,16 +183,24 @@ const ProjectsGridSection = () => {
     mass: 0.5,
   });
 
-  // Header Title fades and moves up
+  // Header title fades and moves up
   const titleOpacity = useTransform(smoothProgress, [0.1, 0.3], [1, 0]);
   const titleY = useTransform(smoothProgress, [0.1, 0.3], [0, -50]);
 
-  // NEW: Filter bar movement logic
-  // Moves the bar from its initial position to the very top (sticky look)
-  const filterY = useTransform(smoothProgress, [0.2, 0.5], ["0px", "-120px"]);
-  const filterScale = useTransform(smoothProgress, [0.2, 0.5], [1, 0.9]);
+// Filter stays pinned at top the entire time, fades only at the absolute end
+const filterTop = useTransform(
+  smoothProgress,
+  [0.08, 0.45],
+  ["53vh", "2vh"]
+);
 
-  // Slide logic for the image canvas
+const filterScale = useTransform(
+  smoothProgress,
+  [0.08, 0.45],
+  [1, 0.85]
+);
+
+  // Canvas slides up at the end
   const canvasY = useTransform(smoothProgress, [0.6, 1.0], ["0vh", "-120vh"]);
 
   const filteredProjects = useMemo(() => {
@@ -207,10 +212,9 @@ const ProjectsGridSection = () => {
   return (
     <section ref={containerRef} className="relative h-[400vh] bg-[#F4F1EE]">
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-        
-        {/* HEADER & FILTER CONTAINER */}
+
+        {/* TITLE — fades out on scroll */}
         <div className="relative z-50 pt-[10vh] flex flex-col items-center text-center pointer-events-none">
-          {/* This part fades out */}
           <motion.h2
             style={{ opacity: titleOpacity, y: titleY }}
             className="text-5xl lg:text-7xl font-display font-bold uppercase tracking-tighter leading-[0.9] mb-10"
@@ -233,31 +237,42 @@ const ProjectsGridSection = () => {
               </span>
             ))}
           </motion.h2>
-
-          {/* This part moves to the top and stays (Sticky Filter Bar) */}
-          <motion.div
-            style={{ y: filterY, scale: filterScale }}
-            className="pointer-events-auto flex gap-6 px-8 py-3 bg-[#D6D1C9]/60 backdrop-blur-md rounded-md text-[10px] uppercase tracking-[0.25em] font-bold text-neutral-700 shadow-sm"
-          >
-            {["All", "Résidentiel", "Retail", "Hospitality"].map((f) => (
-              <span
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`cursor-pointer transition-colors ${
-                  filter === f ? "text-black" : "hover:text-black opacity-50"
-                }`}
-              >
-                {f}
-              </span>
-            ))}
-          </motion.div>
         </div>
+
+        {/* FILTER BAR — fixed, animates from center to top */}
+         <motion.div
+      style={{
+        top: filterTop,
+        scale: filterScale,
+        position: "sticky",
+        left: "50%",
+        x: "-50%",
+        zIndex: 100,
+        width: "fit-content",
+        marginLeft: "auto",
+        marginRight: "auto",
+        marginTop: "-100vh", // pull it up into view
+      }}
+          className="pointer-events-auto flex gap-6 px-8 py-3 bg-[#D6D1C9]/60 backdrop-blur-md rounded-md text-[10px] uppercase tracking-[0.25em] font-bold text-neutral-700 shadow-sm"
+        >
+          {["All", "Résidentiel", "Retail", "Hospitality"].map((f) => (
+            <span
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`cursor-pointer transition-colors ${
+                filter === f ? "text-black" : "hover:text-black opacity-50"
+              }`}
+            >
+              {f}
+            </span>
+          ))}
+        </motion.div>
 
         {/* IMAGE CANVAS */}
         <motion.div style={{ y: canvasY }} className="absolute inset-0 z-10">
           {filteredProjects.map((project, i) => (
             <ImageCard
-              key={project.title + i} // Unique key for filtering
+              key={project.title + i}
               project={project}
               i={i}
               smoothProgress={smoothProgress}
@@ -268,4 +283,5 @@ const ProjectsGridSection = () => {
     </section>
   );
 };
+
 export default ProjectsGridSection;
