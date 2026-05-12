@@ -107,9 +107,11 @@ const HoldingSection = () => {
             animate={{ opacity: 1 }}
             className="flex items-center"
           >
-            <span className="font-sans font-bold text-2xl tracking-tighter text-neutral-900 lowercase">
-              Falcon.Design
-            </span>
+            <img
+              src="/assets/images/falcon-logo.png"
+              alt="Logo"
+              className="w-full h-full object-contain"
+            />
           </motion.div>
 
           <div className="flex items-center gap-8">

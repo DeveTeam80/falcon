@@ -4,14 +4,16 @@ import {
   useTransform,
   useSpring,
   useInView,
+  AnimatePresence,
 } from "motion/react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import ProjectsSlider from "./ProjectSlider";
 import ProjectsGridSection from "./ProjectsGridSection";
 import HoldingSection from "./Hero";
 import MasterSection from "./MasterSection";
 import RevealingHeading from "./RevealingHeader";
+import Preloader from "@/Preloader";
 
 const IntroMorphSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -124,67 +126,59 @@ const spiralImages = [
     alt: "5",
   },
 ];
-
 const SpiralSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    // "start end" starts tracking as soon as the section is visible at the bottom
-    offset: ["start end", "end end"],
+    // "start start" means the animation starts when the section fills the screen
+    offset: ["start start", "end end"],
   });
 
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 80,
-    damping: 35,
-    restDelta: 0.0001,
+    stiffness: 50, // Reduced stiffness for a smoother, more "premium" glide
+    damping: 25,
+    restDelta: 0.001,
   });
 
-  // Start rotation and radius shifts earlier
-  const totalRotation = useTransform(smoothProgress, [0, 1], [0, 1080]);
+  const totalRotation = useTransform(smoothProgress, [0, 1], [0, 360]);
 
   return (
     <section
       ref={containerRef}
-      // Reducing height to 300vh makes the progress feel faster/snappier
-      className="relative h-[300vh] bg-[#F8F7F4] z-50"
+      // 200vh is the standard for "one smooth scroll" feel
+      className="relative h-[200vh] bg-[#F8F7F4] z-50"
     >
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center z-60">
-        <div className="relative w-full h-full flex items-center justify-center [transform-style:preserve-3d]">
+      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
+        <div className="relative w-full h-full flex items-center justify-center">
           {spiralImages.map((img, i) => {
             const angleOffset = (i / spiralImages.length) * 360;
-
-            // Adjusting startEntry to be much lower so images fly in sooner
-            const startEntry = i * 0.04;
-            const endEntry = 0.25 + i * 0.05;
-
-            const xPos = useTransform(
-              smoothProgress,
-              [startEntry, endEntry],
-              [150, 0],
-            );
-
-            const yPos = useTransform(
-              smoothProgress,
-              [startEntry, endEntry],
-              [-100, 0],
-            );
+            
+            // Staggered entry timing
+            const startEntry = i * 0.02; 
+            const endEntry = 0.2 + i * 0.02;
 
             const rotation = useTransform(
               totalRotation,
-              (r) => r + angleOffset,
-            );
-            const radius = useTransform(
-              smoothProgress,
-              [startEntry, 0.5, 1],
-              [10, 45, 0],
+              (r) => r + angleOffset
             );
 
-            // Opacity and Scale need to trigger right at the start
+            /**
+             * BALANCED RADIUS LOGIC:
+             * 0.0 -> 0.2: Images fly out to form the circle
+             * 0.2 -> 0.7: STABLE CIRCLE (The "View" window)
+             * 0.7 -> 1.0: Smoothly stack into center
+             */
+            const radius = useTransform(
+              smoothProgress,
+              [0, 0.2, 0.7, 1], 
+              [0, 30, 30, 0]
+            );
+
             const opacity = useTransform(
               smoothProgress,
-              [startEntry, startEntry + 0.02],
-              [0, 1],
+              [startEntry, startEntry + 0.1],
+              [0, 1]
             );
 
             return (
@@ -200,18 +194,14 @@ const SpiralSection = () => {
                 className="h-1 flex items-center justify-center origin-center pointer-events-none"
               >
                 <motion.div
-                  className="w-[40vw] aspect-[4/3] bg-white shadow-2xl pointer-events-auto"
+                  className="w-[35vw] md:w-[25vw] aspect-[4/3] bg-white shadow-2xl pointer-events-auto"
                   style={{
-                    x: useTransform(
-                      [xPos, radius],
-                      ([x, r]) => `${(x as number) + (r as number)}vw`,
-                    ),
-                    y: useTransform([yPos], ([y]) => `${y}vh`),
+                    x: useTransform(radius, (r) => `${r}vw`),
                     rotateZ: useTransform(rotation, (r) => -r),
                     scale: useTransform(
-                      smoothProgress,
-                      [startEntry, endEntry],
-                      [0.5, 1],
+                      smoothProgress, 
+                      [0, 0.2, 0.8, 1], 
+                      [0.6, 1, 1, 0.9]
                     ),
                   }}
                 >
@@ -229,6 +219,7 @@ const SpiralSection = () => {
     </section>
   );
 };
+
 const ReviewsSection = () => {
   const testimonials = [
     {
@@ -436,15 +427,15 @@ const BlogSection = () => {
 
 const Footer = () => {
   return (
-    <footer className="bg-neutral-900 pt-24 pb-12 text-white">
+    <footer className="bg-[#666666] pt-24 pb-12 text-white">
       <div className="container mx-auto px-8 md:px-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8 mb-24">
           {/* Logo & Intro */}
           <div className="md:col-span-5 flex flex-col items-start">
             <span className="font-sans font-bold text-2xl tracking-tighter text-white mb-8 lowercase">
-              felixnieto.
+              falcon design
             </span>
-            <p className="font-sans text-sm text-neutral-400 leading-relaxed max-w-xs mb-8">
+            <p className="font-sans text-sm text-white/70 leading-relaxed max-w-xs mb-8">
               Crafting visual narratives for the world's most ambitious
               architecture and design practices.
             </p>
@@ -453,7 +444,7 @@ const Footer = () => {
                 <a
                   key={link}
                   href="#"
-                  className="font-sans text-[10px] tracking-[0.2em] uppercase font-bold text-neutral-500 hover:text-white transition-colors"
+                  className="font-sans text-[10px] tracking-[0.2em] uppercase font-bold text-neutral-300 hover:text-white transition-colors"
                 >
                   {link}
                 </a>
@@ -464,7 +455,7 @@ const Footer = () => {
           {/* Navigation Grid */}
           <div className="md:col-span-7 grid grid-cols-2 lg:grid-cols-4 gap-8">
             <div>
-              <h4 className="font-sans text-[10px] tracking-[0.3em] font-bold text-neutral-600 uppercase mb-8">
+              <h4 className="font-sans text-[10px] tracking-[0.3em] font-bold text-neutral-400 uppercase mb-8">
                 Work
               </h4>
               <ul className="flex flex-col gap-4">
@@ -473,7 +464,7 @@ const Footer = () => {
                     <li key={item}>
                       <a
                         href="#"
-                        className="font-sans text-sm text-neutral-300 hover:text-[#adc9c6] transition-colors"
+                        className="font-sans text-sm text-white/90 hover:text-white transition-all underline-offset-4 hover:underline"
                       >
                         {item}
                       </a>
@@ -483,7 +474,7 @@ const Footer = () => {
               </ul>
             </div>
             <div>
-              <h4 className="font-sans text-[10px] tracking-[0.3em] font-bold text-neutral-600 uppercase mb-8">
+              <h4 className="font-sans text-[10px] tracking-[0.3em] font-bold text-neutral-400 uppercase mb-8">
                 Agency
               </h4>
               <ul className="flex flex-col gap-4">
@@ -491,7 +482,7 @@ const Footer = () => {
                   <li key={item}>
                     <a
                       href="#"
-                      className="font-sans text-sm text-neutral-300 hover:text-[#adc9c6] transition-colors"
+                      className="font-sans text-sm text-white/90 hover:text-white transition-all underline-offset-4 hover:underline"
                     >
                       {item}
                     </a>
@@ -501,24 +492,24 @@ const Footer = () => {
             </div>
             <div className="col-span-full lg:col-span-2">
               <div>
-                <h5 className="font-serif italic text-xl mb-4 text-neutral-400">
+                <h5 className="font-serif italic text-xl mb-4 text-white">
                   Address
                 </h5>
-                <p className="font-sans text-[12px] text-neutral-600 leading-relaxed uppercase tracking-widest">
+                <p className="font-sans text-[12px] text-neutral-300 leading-relaxed uppercase tracking-widest">
                   Studio Dubai
                   <br />
                   International House
                 </p>
-                <h5 className="font-serif italic text-xl my-4 text-neutral-400">
+                <h5 className="font-serif italic text-xl my-4 text-white">
                   Phone
                 </h5>
-                <p className="font-sans text-[12px] text-neutral-600 leading-relaxed uppercase tracking-widest">
+                <p className="font-sans text-[12px] text-neutral-300 leading-relaxed uppercase tracking-widest">
                   +44 (0) 20 7123 4567
                 </p>
-                <h5 className="font-serif italic text-xl my-4 text-neutral-400">
+                <h5 className="font-serif italic text-xl my-4 text-white">
                   Email
                 </h5>
-                <p className="font-sans text-[12px] text-neutral-600 leading-relaxed tracking-widest">
+                <p className="font-sans text-[12px] text-neutral-300 leading-relaxed tracking-widest">
                   hi@falcondesign.com
                 </p>
               </div>
@@ -526,27 +517,24 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Global Presence */}
-
         {/* Legal & Copyright */}
-        <div className="border-t border-neutral-800 pt-12 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="border-t border-white/10 pt-12 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex gap-8">
             <a
               href="#"
-              className="font-sans text-[9px] tracking-[0.1em] text-neutral-600 uppercase hover:text-neutral-400 transition-colors"
+              className="font-sans text-[9px] tracking-[0.2em] text-neutral-400 font-bold uppercase hover:text-white transition-colors"
             >
               Privacy Policy
             </a>
             <a
               href="#"
-              className="font-sans text-[9px] tracking-[0.1em] text-neutral-600 uppercase hover:text-neutral-400 transition-colors"
+              className="font-sans text-[9px] tracking-[0.2em] text-neutral-400 font-bold uppercase hover:text-white transition-colors"
             >
               Terms of Service
             </a>
           </div>
-          <p className="font-sans text-[9px] tracking-[0.1em] text-neutral-700 uppercase">
-            © {new Date().getFullYear()} FELIXNIETO VISUAL STRATEGY. ALL RIGHTS
-            RESERVED.
+          <p className="font-sans text-[9px] tracking-[0.2em] text-neutral-500 font-bold uppercase">
+            © {new Date().getFullYear()} FALCON DESIGN | ALL RIGHTS RESERVED.
           </p>
         </div>
       </div>
@@ -555,9 +543,17 @@ const Footer = () => {
 };
 
 export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
   return (
     <main className="bg-white">
+      <AnimatePresence>
+        {isLoading && (
+          <Preloader onComplete={() => setIsLoading(false)} />
+        )}
+      </AnimatePresence>
       {/* Hero Section */}
+      {!isLoading && (
+        <>
       <HoldingSection />
       <IntroMorphSection />
       {/* <MasterSection/> */}
@@ -567,6 +563,8 @@ export default function App() {
       <ReviewsSection />
       <BlogSection />
       <Footer />
+        </>
+      )}
     </main>
   );
 }
