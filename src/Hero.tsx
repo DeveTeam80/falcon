@@ -107,10 +107,11 @@ const HoldingSection = () => {
             animate={{ opacity: 1 }}
             className="flex items-center"
           >
-            <img
+            <motion.img
+              layoutId="main-logo"
               src="/assets/images/falcon-logo.png"
               alt="Logo"
-              className="w-full h-full object-contain"
+              className="w-40 h-40 object-contain"
             />
           </motion.div>
 
@@ -168,7 +169,7 @@ const HoldingSection = () => {
           {/* Titles */}
           <motion.div
             style={{ opacity: titleOpacity, y: titleY }}
-            className="px-8 md:px-16 z-20"
+            className="px-8 md:px-16 z-20 pt-14"
           >
             <div className="flex flex-col uppercase font-sans font-medium text-[8vw] leading-[0.85] tracking-tighter text-neutral-900">
               <CharacterReveal text="ARCHITECTURAL SOUL" delay={0.2} />

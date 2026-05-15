@@ -1,12 +1,12 @@
 import { motion } from "motion/react";
 
-const RevealingHeading = ({ 
-  topText, 
-  bottomText, 
-  className = "" 
-}: { 
-  topText: string; 
-  bottomText: string; 
+const RevealingHeading = ({
+  topText,
+  bottomText,
+  className = "",
+}: {
+  topText: string;
+  bottomText: string;
   className?: string;
 }) => {
   // Shared transition setting for a high-end, smooth feel
@@ -26,22 +26,22 @@ const RevealingHeading = ({
       <div className="overflow-hidden w-full flex justify-center">
         <motion.span
           variants={{
-            hidden: { 
-              y: "100%", 
+            hidden: {
+              y: "100%",
               x: "-20%", // Slightly more offset for a clearer "left-to-center" path
-              opacity: 0 
+              opacity: 0,
             },
-            visible: { 
-              y: 0, 
-              x: 0, 
+            visible: {
+              y: 0,
+              x: 0,
               opacity: 1,
               transition: {
                 // By removing individual delays, x and y start together
-                y: { ...smoothTransition, duration: 1.2 }, 
+                y: { ...smoothTransition, duration: 1.2 },
                 x: { ...smoothTransition, duration: 1.8 }, // x lasts longer to "settle" into center
-                opacity: { duration: 1 }
-              }
-            }
+                opacity: { duration: 1 },
+              },
+            },
           }}
           className="font-serif italic text-6xl md:text-8xl text-neutral-800 leading-tight whitespace-nowrap"
         >
@@ -54,13 +54,13 @@ const RevealingHeading = ({
         <motion.span
           variants={{
             hidden: { y: "100%" },
-            visible: { 
-              y: 0, 
-              transition: { 
+            visible: {
+              y: 0,
+              transition: {
                 ...smoothTransition,
-                delay: 0.05 // A tiny staggered start for the second line looks more organic
-              } 
-            }
+                delay: 0.05, // A tiny staggered start for the second line looks more organic
+              },
+            },
           }}
           className="font-sans font-bold text-6xl md:text-8xl text-neutral-900 uppercase tracking-tighter"
         >
