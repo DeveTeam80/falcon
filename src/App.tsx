@@ -14,6 +14,7 @@ import HoldingSection from "./Hero";
 import MasterSection from "./MasterSection";
 import RevealingHeading from "./RevealingHeader";
 import Preloader from "@/Preloader";
+import CaseStudies from "./caseStudies";
 
 const IntroMorphSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -131,54 +132,86 @@ const SpiralSection = () => {
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    // "start start" means the animation starts when the section fills the screen
-    offset: ["start start", "end end"],
+
+    /**
+     * Starts animation earlier
+     * Reduces dead scroll feeling
+     */
+    offset: ["start 0.92", "end 0.90"],
   });
 
+  /**
+   * Faster + smoother cinematic response
+   */
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 50, // Reduced stiffness for a smoother, more "premium" glide
-    damping: 25,
-    restDelta: 0.001,
+    stiffness: 28,
+    damping: 32,
+    mass: 0.9,
+    restDelta: 0.0001,
   });
 
-  const totalRotation = useTransform(smoothProgress, [0, 1], [0, 360]);
+  /**
+   * One full cinematic orbit
+   */
+  const totalRotation = useTransform(smoothProgress, [0, 1], [0, 180]);
 
   return (
     <section
       ref={containerRef}
-      // 200vh is the standard for "one smooth scroll" feel
-      className="relative h-[200vh] bg-[#F8F7F4] z-50"
+      /**
+       * Reduced height
+       * Less unnecessary scrolling
+       */
+      className="relative z-50 h-[320svh] bg-[#F8F7F4]"
     >
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
-        <div className="relative w-full h-full flex items-center justify-center">
+      <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
+        <div className="relative flex h-full w-full items-center justify-center">
           {spiralImages.map((img, i) => {
-            const angleOffset = (i / spiralImages.length) * 360;
-            
-            // Staggered entry timing
-            const startEntry = i * 0.02; 
-            const endEntry = 0.2 + i * 0.02;
+            const angleOffset = -20 + (i / spiralImages.length) * 360;
+            /**
+             * Faster image entry timing
+             */
+            const imageStart = i * 0.022;
 
+            /**
+             * Longer orbit before stacking
+             */
+            const imageEnd = 0.82 + i * 0.025;
+
+            /**
+             * Circular rotation
+             */
             const rotation = useTransform(
               totalRotation,
-              (r) => r + angleOffset
+              (r) => r + angleOffset,
             );
 
             /**
-             * BALANCED RADIUS LOGIC:
-             * 0.0 -> 0.2: Images fly out to form the circle
-             * 0.2 -> 0.7: STABLE CIRCLE (The "View" window)
-             * 0.7 -> 1.0: Smoothly stack into center
+             * Starts farther from edge
+             * Creates premium cinematic entrance
              */
-            const radius = useTransform(
+            const imageRadius = useTransform(
               smoothProgress,
-              [0, 0.2, 0.7, 1], 
-              [0, 30, 30, 0]
+              [imageStart, imageEnd],
+              [72, 0],
             );
 
+            /**
+             * Smooth fade-in
+             */
             const opacity = useTransform(
               smoothProgress,
-              [startEntry, startEntry + 0.1],
-              [0, 1]
+              [imageStart, imageStart + 0.045],
+              [0, 1],
+            );
+
+            /**
+             * Scale animation
+             */
+            const scale = useTransform(
+              smoothProgress,
+              [imageStart, imageStart + 0.07],
+              [0.72, 1],
             );
 
             return (
@@ -187,28 +220,33 @@ const SpiralSection = () => {
                 style={{
                   rotate: rotation,
                   width: "100%",
-                  zIndex: i,
                   position: "absolute",
                   opacity,
+                  zIndex: spiralImages.length - i,
                 }}
-                className="h-1 flex items-center justify-center origin-center pointer-events-none"
+                className="pointer-events-none flex h-1 origin-center items-center justify-center"
               >
                 <motion.div
-                  className="w-[35vw] md:w-[25vw] aspect-[4/3] bg-white shadow-2xl pointer-events-auto"
+                  className="pointer-events-auto aspect-[4/3] w-[42vw] overflow-hidden rounded-sm bg-white shadow-2xl md:w-[40vw]"
                   style={{
-                    x: useTransform(radius, (r) => `${r}vw`),
+                    /**
+                     * Main spiral movement
+                     */
+                    x: useTransform(imageRadius, (r) => `${r}vw`),
+
+                    /**
+                     * Keeps images upright
+                     */
                     rotateZ: useTransform(rotation, (r) => -r),
-                    scale: useTransform(
-                      smoothProgress, 
-                      [0, 0.2, 0.8, 1], 
-                      [0.6, 1, 1, 0.9]
-                    ),
+
+                    scale,
                   }}
                 >
                   <img
                     src={img.src}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                     alt=""
+                    draggable={false}
                   />
                 </motion.div>
               </motion.div>
@@ -219,7 +257,6 @@ const SpiralSection = () => {
     </section>
   );
 };
-
 const ReviewsSection = () => {
   const testimonials = [
     {
@@ -546,25 +583,21 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   return (
     <main className="bg-white">
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isLoading && (
-          <Preloader onComplete={() => setIsLoading(false)} />
+          <Preloader key="preloader" onComplete={() => setIsLoading(false)} />
         )}
       </AnimatePresence>
-      {/* Hero Section */}
-      {!isLoading && (
-        <>
+
       <HoldingSection />
       <IntroMorphSection />
-      {/* <MasterSection/> */}
       <SpiralSection />
       <ProjectsSlider />
       <ProjectsGridSection />
+      <CaseStudies />
       <ReviewsSection />
       <BlogSection />
       <Footer />
-        </>
-      )}
     </main>
   );
 }
